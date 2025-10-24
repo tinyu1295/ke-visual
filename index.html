@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="utf-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ontology Knowledge Graph</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
@@ -87,19 +86,19 @@
             physics: {
                 enabled: true,
                 barnesHut: {
-                    gravitationalConstant: -8000,
-                    centralGravity: 0.3,
-                    springLength: 200,
-                    springConstant: 0.04,
+                    gravitationalConstant: -15000,
+                    centralGravity: 0.1,
+                    springLength: 250,
+                    springConstant: 0.02,
                     damping: 0.09,
-                    avoidOverlap: 0.5
+                    avoidOverlap: 0.8
                 },
-                maxVelocity: 50,
+                maxVelocity: 30,
                 minVelocity: 0.1,
                 solver: 'barnesHut',
                 stabilization: {
                     enabled: true,
-                    iterations: 100,
+                    iterations: 200,
                     updateInterval: 25
                 }
             },
@@ -107,12 +106,15 @@
                 hover: true,
                 tooltipDelay: 100,
                 navigationButtons: true,
-                keyboard: true
+                keyboard: true,
+                dragNodes: true,
+                dragView: true,
+                zoomView: true
             },
             nodes: {
                 shape: 'dot',
                 font: {
-                    size: 14,
+                    size: 12,
                     face: 'Arial',
                     color: '#000000'
                 },
@@ -123,20 +125,29 @@
                 arrows: {
                     to: {
                         enabled: true,
-                        scaleFactor: 0.5
+                        scaleFactor: 1.2,
+                        type: 'arrow'
                     }
                 },
                 smooth: {
                     enabled: true,
                     type: 'continuous',
-                    roundness: 0.2
+                    roundness: 0.15
                 },
+                length: 300,
                 font: {
-                    size: 10,
+                    size: 9,
                     align: 'middle',
                     background: 'white',
                     strokeWidth: 0
                 }
+            },
+            groups: {
+                useDefaultGroups: true
+            },
+            layout: {
+                improvedLayout: true,
+                clusterThreshold: 150
             }
         };
         
@@ -147,9 +158,27 @@
             if (params.nodes.length > 0) {
                 var nodeId = params.nodes[0];
                 var node = data.nodes.get(nodeId);
-                console.log("Node clicked:", node);
+                console.log("Entity clicked:", node.label, "Type:", node.type);
+                
+                // Optional: Show alert with entity info
+                // alert("Entity: " + node.label + "\\nType: " + node.type);
             }
         });
+        
+        // Add legend for node types
+        var legend = '<div style="position: absolute; top: 130px; right: 30px; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+        legend += '<h3 style="margin-top: 0; font-size: 14px;">Node Types</h3>';
+        var types = {};
+        graphData.nodes.forEach(function(node) {
+            if (!types[node.type]) {
+                types[node.type] = node.color;
+            }
+        });
+        Object.keys(types).sort().forEach(function(type) {
+            legend += '<div style="margin: 5px 0;"><span style="display: inline-block; width: 12px; height: 12px; background: ' + types[type] + '; border-radius: 50%; margin-right: 8px;"></span>' + type + '</div>';
+        });
+        legend += '</div>';
+        document.body.insertAdjacentHTML('beforeend', legend);
     </script>
 </body>
 </html>
