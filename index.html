@@ -1,55 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ontology Knowledge Graph</title>
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
+    ></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5; }
-        #mynetwork { width: 100%; height: 800px; border: 1px solid #ddd; background-color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 20px; color:#333 !important; }
-        .header h1 {color:#333 !important;}
-        .stats { background: white; padding: 15px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .stat-item { padding: 10px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #4ECDC4; }
-        .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #333; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      #mynetwork {
+        width: 100%;
+        height: 800px;
+        border: 1px solid #ddd;
+        background-color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333 !important;
+      }
+      .header h1 {
+        color: #333 !important;
+      }
+      .stats {
+        background: white;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .stat-item {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 4px solid #4ecdc4;
+      }
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 5px;
+      }
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="header">
-        <h1>Ontology Knowledge Graph</h1>
-        <p>Interactive visualization of ontology relationships</p>
+      <h1>Ontology Knowledge Graph</h1>
+      <p>Interactive visualization of ontology relationships</p>
     </div>
     <div class="stats" id="stats"></div>
     <div id="mynetwork"></div>
     <script type="text/javascript">
-        var graphData = {GRAPH_DATA};
-        var statsHtml = '<div class="stats-grid">';
-        statsHtml += '<div class="stat-item"><div class="stat-label">Node Types</div><div class="stat-value">' + graphData.stats.nodeTypes + '</div></div>';
-        statsHtml += '<div class="stat-item"><div class="stat-label">Total Entities</div><div class="stat-value">' + graphData.stats.totalEntities + '</div></div>';
-        statsHtml += '<div class="stat-item"><div class="stat-label">Displayed Entities</div><div class="stat-value">' + graphData.stats.displayedEntities + '</div></div>';
-        statsHtml += '<div class="stat-item"><div class="stat-label">Relationships</div><div class="stat-value">' + graphData.stats.totalRelationships + '</div></div>';
-        statsHtml += '</div>';
-        document.getElementById('stats').innerHTML = statsHtml;
-        var container = document.getElementById('mynetwork');
-        var data = { nodes: new vis.DataSet(graphData.nodes), edges: new vis.DataSet(graphData.edges) };
-        var options = {
-            physics: { enabled: true, barnesHut: { gravitationalConstant: -20000, centralGravity: 0.05, springLength: 200, springConstant: 0.01, damping: 0.09, avoidOverlap: 1 }, maxVelocity: 20, minVelocity: 0.1, solver: "barnesHut", stabilization: { enabled: true, iterations: 300, updateInterval: 50 } },
-            interaction: { hover: true, tooltipDelay: 100, navigationButtons: true, keyboard: true, dragNodes: true, dragView: true, zoomView: true },
-            nodes: { shape: 'dot', font: { size: 12, face: 'Arial', color: '#000000' }, borderWidth: 2, borderWidthSelected: 4 },
-            edges: { arrows: { to: { enabled: true, scaleFactor: 1.5, type: 'arrow' } }, smooth: { enabled: true, type: 'continuous', roundness: 0.15 }, length: 300, font: { size: 12, align: 'top', background: 'white', strokeWidth: 0 } },
-            groups: { useDefaultGroups: true },
-            layout: { improvedLayout: true, clusterThreshold: 150 }
-        };
-        var network = new vis.Network(container, data, options);
-        network.on("click", function(params) {
-            if (params.nodes.length > 0) {
-                var nodeId = params.nodes[0];
-                var node = data.nodes.get(nodeId);
-                console.log("Entity clicked:", node.label, "Type:", node.type);
-            }
-        });
+      var graphData = { GRAPH_DATA };
+      var statsHtml = '<div class="stats-grid">';
+      statsHtml +=
+        '<div class="stat-item"><div class="stat-label">Node Types</div><div class="stat-value">' +
+        graphData.stats.nodeTypes +
+        "</div></div>";
+      statsHtml +=
+        '<div class="stat-item"><div class="stat-label">Total Entities</div><div class="stat-value">' +
+        graphData.stats.totalEntities +
+        "</div></div>";
+      statsHtml +=
+        '<div class="stat-item"><div class="stat-label">Displayed Entities</div><div class="stat-value">' +
+        graphData.stats.displayedEntities +
+        "</div></div>";
+      statsHtml +=
+        '<div class="stat-item"><div class="stat-label">Relationships</div><div class="stat-value">' +
+        graphData.stats.totalRelationships +
+        "</div></div>";
+      statsHtml += "</div>";
+      document.getElementById("stats").innerHTML = statsHtml;
+      var container = document.getElementById("mynetwork");
+      var data = {
+        nodes: new vis.DataSet(graphData.nodes),
+        edges: new vis.DataSet(graphData.edges),
+      };
+      var options = {
+        physics: {
+          enabled: true,
+          barnesHut: {
+            gravitationalConstant: -20000,
+            centralGravity: 0.05,
+            springLength: 200,
+            springConstant: 0.01,
+            damping: 0.09,
+            avoidOverlap: 1,
+          },
+          maxVelocity: 20,
+          minVelocity: 0.1,
+          solver: "barnesHut",
+          stabilization: { enabled: true, iterations: 300, updateInterval: 50 },
+        },
+        interaction: {
+          hover: true,
+          tooltipDelay: 100,
+          navigationButtons: true,
+          keyboard: true,
+          dragNodes: true,
+          dragView: true,
+          zoomView: true,
+        },
+        nodes: {
+          shape: "dot",
+          font: { size: 12, face: "Arial", color: "#000000" },
+          borderWidth: 2,
+          borderWidthSelected: 4,
+        },
+        edges: {
+          arrows: { to: { enabled: true, scaleFactor: 1.5, type: "arrow" } },
+          smooth: { enabled: true, type: "continuous", roundness: 0.15 },
+          length: 300,
+          font: { size: 12, align: "top", background: "white", strokeWidth: 0 },
+        },
+        groups: { useDefaultGroups: true },
+        layout: { improvedLayout: true, clusterThreshold: 150 },
+      };
+      var network = new vis.Network(container, data, options);
+      network.on("click", function (params) {
+        if (params.nodes.length > 0) {
+          var nodeId = params.nodes[0];
+          var node = data.nodes.get(nodeId);
+          console.log("Entity clicked:", node.label, "Type:", node.type);
+        }
+      });
     </script>
-</body>
+    <script type="text/javascript">
+      var frozenNodes = new Set();
+
+      // Freeze individual node on hover
+      network.on("hoverNode", function (params) {
+        var nodeId = params.node;
+        frozenNodes.add(nodeId);
+        network.body.nodes[nodeId].options.fixed = { x: true, y: true };
+      });
+
+      // Unfreeze node when hover ends
+      network.on("blurNode", function (params) {
+        var nodeId = params.node;
+        frozenNodes.delete(nodeId);
+        network.body.nodes[nodeId].options.fixed = { x: false, y: false };
+      });
+
+      // Also freeze edges (to prevent connected nodes from pulling)
+      network.on("hoverEdge", function (params) {
+        var edge = network.body.edges[params.edge];
+        if (edge) {
+          var fromId = edge.fromId;
+          var toId = edge.toId;
+          frozenNodes.add(fromId);
+          frozenNodes.add(toId);
+          network.body.nodes[fromId].options.fixed = { x: true, y: true };
+          network.body.nodes[toId].options.fixed = { x: true, y: true };
+        }
+      });
+
+      network.on("blurEdge", function (params) {
+        var edge = network.body.edges[params.edge];
+        if (edge) {
+          var fromId = edge.fromId;
+          var toId = edge.toId;
+          frozenNodes.delete(fromId);
+          frozenNodes.delete(toId);
+          network.body.nodes[fromId].options.fixed = { x: false, y: false };
+          network.body.nodes[toId].options.fixed = { x: false, y: false };
+        }
+      });
+    </script>
+  </body>
 </html>
