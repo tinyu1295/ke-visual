@@ -116,13 +116,9 @@
       }
     </style>
 
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css"
-    />
     <script
       type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js"
+      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
     ></script>
   </head>
 
@@ -159,21 +155,11 @@
     <div id="mynetwork"></div>
 
     <script type="text/javascript">
-      console.log("Initializing network visualization...");
-      try {
-        // This will be replaced by Python with actual network initialization code
+      // This will be replaced by Python with actual network initialization code
+      {
         {
-          {
-            NETWORK_INIT_CODE;
-          }
+          NETWORK_INIT_CODE;
         }
-        console.log("✅ Network initialized successfully");
-      } catch (error) {
-        console.error("❌ Error initializing network:", error);
-        document.getElementById("mynetwork").innerHTML =
-          '<div style="padding: 20px; color: red;">Error loading graph: ' +
-          error.message +
-          "</div>";
       }
     </script>
 
