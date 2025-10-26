@@ -27,9 +27,6 @@
         margin-bottom: 20px;
         color: #333 !important;
       }
-      .header h1 {
-        color: #333 !important;
-      }
       .stats {
         background: white;
         padding: 15px;
@@ -139,48 +136,6 @@
           var nodeId = params.nodes[0];
           var node = data.nodes.get(nodeId);
           console.log("Entity clicked:", node.label, "Type:", node.type);
-        }
-      });
-    </script>
-    <script type="text/javascript">
-      var frozenNodes = new Set();
-
-      // Freeze individual node on hover
-      network.on("hoverNode", function (params) {
-        var nodeId = params.node;
-        frozenNodes.add(nodeId);
-        network.body.nodes[nodeId].options.fixed = { x: true, y: true };
-      });
-
-      // Unfreeze node when hover ends
-      network.on("blurNode", function (params) {
-        var nodeId = params.node;
-        frozenNodes.delete(nodeId);
-        network.body.nodes[nodeId].options.fixed = { x: false, y: false };
-      });
-
-      // Also freeze edges (to prevent connected nodes from pulling)
-      network.on("hoverEdge", function (params) {
-        var edge = network.body.edges[params.edge];
-        if (edge) {
-          var fromId = edge.fromId;
-          var toId = edge.toId;
-          frozenNodes.add(fromId);
-          frozenNodes.add(toId);
-          network.body.nodes[fromId].options.fixed = { x: true, y: true };
-          network.body.nodes[toId].options.fixed = { x: true, y: true };
-        }
-      });
-
-      network.on("blurEdge", function (params) {
-        var edge = network.body.edges[params.edge];
-        if (edge) {
-          var fromId = edge.fromId;
-          var toId = edge.toId;
-          frozenNodes.delete(fromId);
-          frozenNodes.delete(toId);
-          network.body.nodes[fromId].options.fixed = { x: false, y: false };
-          network.body.nodes[toId].options.fixed = { x: false, y: false };
         }
       });
     </script>
