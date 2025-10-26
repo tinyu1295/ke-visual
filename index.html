@@ -31,7 +31,7 @@
 
       .stats {
         position: absolute;
-        top: 20px;
+        bottom: 20px;
         left: 20px;
         background: white;
         padding: 12px 18px;
@@ -39,7 +39,7 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         z-index: 1000;
         font-size: 13px;
-        color: #666;
+        color: #333 !important;
       }
 
       .stats div {
@@ -87,6 +87,8 @@
     </style>
   </head>
   <body>
+    <div id="loading" class="loading">Loading graph...</div>
+
     <div class="stats">
       <div><strong>Nodes:</strong> <span id="nodeCount">0</span></div>
       <div><strong>Edges:</strong> <span id="edgeCount">0</span></div>
@@ -94,7 +96,7 @@
     </div>
 
     <div class="legend" id="legend">
-      <h3>Entity Types</h3>
+      <h3>🎨 Entity Types</h3>
     </div>
 
     <div id="mynetwork"></div>
@@ -162,6 +164,11 @@
       };
 
       var network = new vis.Network(container, data, options);
+
+      // Hide loading message
+      network.on("stabilizationIterationsDone", function () {
+        document.getElementById("loading").style.display = "none";
+      });
 
       // Update stats
       document.getElementById("nodeCount").textContent = graphData.nodes.length;
