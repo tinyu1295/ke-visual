@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ontology Knowledge Graph</title>
     <script
@@ -9,87 +9,158 @@
       src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
     ></script>
     <style>
-      body {
-        font-family: Arial, sans-serif;
+      * {
         margin: 0;
-        padding: 20px;
-        background-color: #f5f5f5;
+        padding: 0;
+        box-sizing: border-box;
       }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #f5f5f5;
+        overflow: hidden;
+      }
+
       #mynetwork {
         width: 100%;
-        height: 800px;
-        border: 1px solid #ddd;
-        background-color: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        height: 100vh;
+        background: #ffffff;
+        border: none;
       }
-      .header {
-        text-align: center;
-        margin-bottom: 20px;
-        color: #333 !important;
-      }
-      .stats {
+
+      .controls {
+        position: absolute;
+        top: 20px;
+        left: 20px;
         background: white;
         padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-width: 300px;
       }
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 15px;
-      }
-      .stat-item {
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        border-left: 4px solid #4ecdc4;
-      }
-      .stat-label {
-        font-size: 12px;
-        color: #666;
-        margin-bottom: 5px;
-      }
-      .stat-value {
-        font-size: 24px;
-        font-weight: bold;
+
+      .controls h3 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
         color: #333;
+      }
+
+      .controls button {
+        background: #4ecdc4;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        margin: 5px 5px 5px 0;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.3s;
+      }
+
+      .controls button:hover {
+        background: #45b7d1;
+      }
+
+      .stats {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: white;
+        padding: 12px 18px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        font-size: 13px;
+        color: #666;
+      }
+
+      .stats div {
+        margin: 3px 0;
+      }
+
+      .stats strong {
+        color: #333;
+      }
+
+      .legend {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .legend h3 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        color: #333;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 8px 0;
+        font-size: 13px;
+      }
+
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        margin-right: 10px;
+        border: 2px solid #ddd;
+      }
+
+      .loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 18px;
+        color: #666;
       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <h1>Ontology Knowledge Graph</h1>
-      <p>Interactive visualization of ontology relationships</p>
+    <div id="loading" class="loading">Loading graph...</div>
+
+    <div class="controls">
+      <h3>🎮 Controls</h3>
+      <button onclick="network.fit()">Fit to Screen</button>
+      <button onclick="resetPhysics()">Reset Layout</button>
+      <button onclick="togglePhysics()">Toggle Physics</button>
     </div>
-    <div class="stats" id="stats"></div>
+
+    <div class="stats">
+      <div><strong>Nodes:</strong> <span id="nodeCount">0</span></div>
+      <div><strong>Edges:</strong> <span id="edgeCount">0</span></div>
+      <div><strong>Types:</strong> <span id="typeCount">0</span></div>
+    </div>
+
+    <div class="legend" id="legend">
+      <h3>🎨 Entity Types</h3>
+    </div>
+
     <div id="mynetwork"></div>
+
     <script type="text/javascript">
-      var graphData = { GRAPH_DATA };
-      var statsHtml = '<div class="stats-grid">';
-      statsHtml +=
-        '<div class="stat-item"><div class="stat-label">Node Types</div><div class="stat-value">' +
-        graphData.stats.nodeTypes +
-        "</div></div>";
-      statsHtml +=
-        '<div class="stat-item"><div class="stat-label">Total Entities</div><div class="stat-value">' +
-        graphData.stats.totalEntities +
-        "</div></div>";
-      statsHtml +=
-        '<div class="stat-item"><div class="stat-label">Displayed Entities</div><div class="stat-value">' +
-        graphData.stats.displayedEntities +
-        "</div></div>";
-      statsHtml +=
-        '<div class="stat-item"><div class="stat-label">Relationships</div><div class="stat-value">' +
-        graphData.stats.totalRelationships +
-        "</div></div>";
-      statsHtml += "</div>";
-      document.getElementById("stats").innerHTML = statsHtml;
+      // Graph data will be injected here by Python
+      /* GRAPH_DATA_PLACEHOLDER */
+
+      // Initialize the network
       var container = document.getElementById("mynetwork");
       var data = {
         nodes: new vis.DataSet(graphData.nodes),
         edges: new vis.DataSet(graphData.edges),
       };
+
       var options = {
         physics: {
           enabled: true,
@@ -104,7 +175,13 @@
           maxVelocity: 20,
           minVelocity: 0.1,
           solver: "barnesHut",
-          stabilization: { enabled: true, iterations: 300, updateInterval: 50 },
+          stabilization: {
+            enabled: true,
+            iterations: 300,
+            updateInterval: 50,
+            onlyDynamicEdges: false,
+            fit: true,
+          },
         },
         interaction: {
           hover: true,
@@ -116,27 +193,113 @@
           zoomView: true,
         },
         nodes: {
-          shape: "dot",
-          font: { size: 12, face: "Arial", color: "#000000" },
-          borderWidth: 2,
-          borderWidthSelected: 4,
+          font: {
+            size: 14,
+            face: "arial",
+          },
         },
         edges: {
-          arrows: { to: { enabled: true, scaleFactor: 1.5, type: "arrow" } },
-          smooth: { enabled: true, type: "continuous", roundness: 0.15 },
-          length: 300,
-          font: { size: 12, align: "top", background: "white", strokeWidth: 0 },
+          font: {
+            size: 12,
+            face: "arial",
+            align: "top",
+          },
+          smooth: {
+            enabled: true,
+            type: "continuous",
+            roundness: 0.2,
+          },
         },
-        groups: { useDefaultGroups: true },
-        layout: { improvedLayout: true, clusterThreshold: 150 },
       };
+
       var network = new vis.Network(container, data, options);
+
+      // Hide loading message
+      network.on("stabilizationIterationsDone", function () {
+        document.getElementById("loading").style.display = "none";
+      });
+
+      // Update stats
+      document.getElementById("nodeCount").textContent = graphData.nodes.length;
+      document.getElementById("edgeCount").textContent = graphData.edges.length;
+
+      // Count unique types (nodes starting with PARENT_)
+      var typeCount = graphData.nodes.filter((n) =>
+        n.id.startsWith("PARENT_")
+      ).length;
+      document.getElementById("typeCount").textContent = typeCount;
+
+      // Build legend
+      var legendContainer = document.getElementById("legend");
+      var types = {};
+
+      graphData.nodes.forEach(function (node) {
+        if (node.id.startsWith("PARENT_")) {
+          var typeName = node.id.replace("PARENT_", "");
+          types[typeName] = node.color;
+        }
+      });
+
+      Object.keys(types)
+        .sort()
+        .forEach(function (typeName) {
+          var item = document.createElement("div");
+          item.className = "legend-item";
+
+          var colorBox = document.createElement("div");
+          colorBox.className = "legend-color";
+          colorBox.style.backgroundColor = types[typeName];
+
+          var label = document.createElement("span");
+          label.textContent = typeName;
+
+          item.appendChild(colorBox);
+          item.appendChild(label);
+          legendContainer.appendChild(item);
+        });
+
+      // Control functions
+      function resetPhysics() {
+        network.setOptions({ physics: { enabled: true } });
+        setTimeout(function () {
+          network.stabilize();
+        }, 100);
+      }
+
+      var physicsEnabled = true;
+      function togglePhysics() {
+        physicsEnabled = !physicsEnabled;
+        network.setOptions({ physics: { enabled: physicsEnabled } });
+      }
+
+      // Interaction events
       network.on("click", function (params) {
         if (params.nodes.length > 0) {
           var nodeId = params.nodes[0];
-          var node = data.nodes.get(nodeId);
-          console.log("Entity clicked:", node.label, "Type:", node.type);
+          console.log("Clicked node:", nodeId);
         }
+      });
+
+      network.on("doubleClick", function (params) {
+        if (params.nodes.length > 0) {
+          network.focus(params.nodes[0], {
+            scale: 1.5,
+            animation: {
+              duration: 1000,
+              easingFunction: "easeInOutQuad",
+            },
+          });
+        }
+      });
+
+      // Fit graph after stabilization
+      network.once("stabilizationIterationsDone", function () {
+        network.fit({
+          animation: {
+            duration: 1000,
+            easingFunction: "easeInOutQuad",
+          },
+        });
       });
     </script>
   </body>
