@@ -155,35 +155,36 @@
     <div id="mynetwork"></div>
 
     <script type="text/javascript">
-      // This will be replaced by Python with actual network initialization code
-      {
-        {
-          NETWORK_INIT_CODE;
-        }
-      }
-    </script>
-
-    <script type="text/javascript">
-      // This will be replaced by Python with actual graph data
+      // Graph data will be injected by Python
       window.graphData = {{GRAPH_DATA_JSON}};
 
-      console.log('Graph data injected:', window.graphData);
+      console.log('Graph data loaded:', window.graphData);
+
+      // Initialize vis.js network
+      var container = document.getElementById('mynetwork');
+      var data = {
+          nodes: new vis.DataSet(window.graphData.nodes),
+          edges: new vis.DataSet(window.graphData.edges)
+      };
+
+      var options = window.graphData.options;
+
+      // Create network
+      var network = new vis.Network(container, data, options);
+      console.log('✅ Network initialized successfully');
 
       // Update statistics panel
       function updateStats() {
           const data = window.graphData;
 
-          // Update main statistics
           document.getElementById('total-types').textContent = data.nodeTypes.length;
           document.getElementById('total-entities').textContent = data.totalEntities.toLocaleString();
           document.getElementById('total-relationships').textContent = data.totalRelationships.toLocaleString();
           document.getElementById('relationship-types').textContent = data.relationshipTypes;
 
-          // Calculate total showing entities
           const totalShowing = data.nodeTypes.reduce((sum, nt) => sum + nt.showing, 0);
           document.getElementById('showing-entities').textContent = totalShowing.toLocaleString();
 
-          // Populate node types list
           const nodeTypesList = document.getElementById('node-types-list');
           nodeTypesList.innerHTML = '';
 
@@ -219,20 +220,12 @@
 
       // Freeze node on hover functionality
       function setupNodeFreezing() {
-          // Wait for network to be initialized
-          if (typeof network === 'undefined') {
-              setTimeout(setupNodeFreezing, 100);
-              return;
-          }
-
           let frozenNodes = new Set();
 
-          // On hover over a node, freeze it
           network.on("hoverNode", function(params) {
               const nodeId = params.node;
               frozenNodes.add(nodeId);
 
-              // Fix the node position
               const positions = network.getPositions([nodeId]);
               const pos = positions[nodeId];
               network.body.nodes[nodeId].options.fixed = {
@@ -243,12 +236,10 @@
               network.body.nodes[nodeId].y = pos.y;
           });
 
-          // On blur (mouse leaves node), unfreeze it
           network.on("blurNode", function(params) {
               const nodeId = params.node;
               frozenNodes.delete(nodeId);
 
-              // Unfix the node position
               if (network.body.nodes[nodeId]) {
                   network.body.nodes[nodeId].options.fixed = {
                       x: false,
@@ -256,20 +247,11 @@
                   };
               }
           });
-
-          console.log('✅ Node freezing enabled');
       }
 
-      // Wait for DOM to be ready
-      if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function() {
-              updateStats();
-              setupNodeFreezing();
-          });
-      } else {
-          updateStats();
-          setupNodeFreezing();
-      }
+      // Initialize everything
+      updateStats();
+      setupNodeFreezing();
     </script>
   </body>
 </html>
