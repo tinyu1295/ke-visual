@@ -1,265 +1,275 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ontology Knowledge Graph</title>
-    <script
-      type="text/javascript"
-      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
-    ></script>
-    <style>
-      * {
+    <meta charset="utf-8" />
+    <title>Knowledge Graph Visualization</title>
+    <style type="text/css">
+      body {
         margin: 0;
         padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Oxygen, Ubuntu, Cantarell, sans-serif;
-        background: #f5f5f5;
-        overflow: hidden;
+          Arial, sans-serif;
       }
 
       #mynetwork {
         width: 100%;
-        height: 100vh;
-        background: #ffffff;
-        border: none;
+        height: 900px;
+        border: 1px solid lightgray;
       }
 
-      .stats {
+      /* Statistics Panel - Left */
+      #stats-panel {
         position: absolute;
-        bottom: 20px;
-        left: 20px;
-        background: white;
-        padding: 12px 18px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        top: 15px;
+        left: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 10px 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         z-index: 1000;
-        font-size: 13px;
-        color: #333 !important;
+        width: 200px;
       }
 
-      .stats div {
-        margin: 3px 0;
-      }
-
-      .stats strong {
+      #stats-panel h3 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
         color: #333;
+        border-bottom: 2px solid #333;
+        padding-bottom: 5px;
       }
 
-      .legend {
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 12px;
+      }
+
+      .stat-label {
+        font-weight: 600;
+        color: #555;
+      }
+
+      .stat-value {
+        font-weight: bold;
+        color: #000;
+      }
+
+      /* Entity Types Panel - Right */
+      #entity-types-panel {
         position: absolute;
-        top: 20px;
-        right: 20px;
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 10px 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         z-index: 1000;
-        max-height: 80vh;
+        width: 200px;
+        max-height: 400px;
         overflow-y: auto;
-        color: #333 !important;
       }
 
-      .legend h3 {
-        margin: 0 0 10px 0;
-        font-size: 16px;
-        color: #333 !important;
+      #entity-types-panel h3 {
+        margin: 0 0 8px 0;
+        font-size: 14px;
+        color: #333;
+        border-bottom: 2px solid #333;
+        padding-bottom: 5px;
       }
 
-      .legend-item {
+      .node-type-item {
         display: flex;
         align-items: center;
-        margin: 8px 0;
-        font-size: 13px;
+        padding: 3px 0;
+        font-size: 11px;
       }
 
-      .legend-color {
-        width: 20px;
-        height: 20px;
-        border-radius: 3px;
-        margin-right: 10px;
-        border: 2px solid #ddd;
+      .node-type-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+        margin-right: 6px;
+        border: 1px solid #999;
+        flex-shrink: 0;
+      }
+
+      .node-type-name {
+        flex: 1;
+        color: #444;
+        font-weight: 500;
+      }
+
+      .node-type-count {
+        font-weight: bold;
+        color: #000;
+        margin-left: 6px;
+        font-size: 11px;
+      }
+
+      .showing-info {
+        font-size: 10px;
+        color: #666;
+        margin-left: 2px;
       }
     </style>
-  </head>
-  <body>
-    <div id="loading" class="loading">Loading graph...</div>
 
-    <div class="stats">
-      <div><strong>Nodes:</strong> <span id="nodeCount">0</span></div>
-      <div><strong>Edges:</strong> <span id="edgeCount">0</span></div>
-      <div><strong>Types:</strong> <span id="typeCount">0</span></div>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
+    ></script>
+  </head>
+
+  <body>
+    <div id="stats-panel">
+      <h3>📊 Graph Statistics</h3>
+      <div class="stat-row">
+        <span class="stat-label">Entity Types:</span>
+        <span class="stat-value" id="total-types">-</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Entities:</span>
+        <span class="stat-value" id="total-entities">-</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Showing Entities:</span>
+        <span class="stat-value" id="showing-entities">-</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Relationships:</span>
+        <span class="stat-value" id="total-relationships">-</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Relationship Types:</span>
+        <span class="stat-value" id="relationship-types">-</span>
+      </div>
     </div>
 
-    <div class="legend" id="legend">
-      <h3>🎨 Entity Types</h3>
+    <div id="entity-types-panel">
+      <h3>Entity Types</h3>
+      <div id="node-types-list"></div>
     </div>
 
     <div id="mynetwork"></div>
 
     <script type="text/javascript">
-      // Graph data will be injected here by Python
-      /* GRAPH_DATA_PLACEHOLDER */
-
-      // Initialize the network
-      var container = document.getElementById("mynetwork");
-      var data = {
-        nodes: new vis.DataSet(graphData.nodes),
-        edges: new vis.DataSet(graphData.edges),
-      };
-
-      var options = {
-        physics: {
-          enabled: true,
-          barnesHut: {
-            gravitationalConstant: -20000,
-            centralGravity: 0.05,
-            springLength: 200,
-            springConstant: 0.01,
-            damping: 0.09,
-            avoidOverlap: 1,
-          },
-          maxVelocity: 20,
-          minVelocity: 0.1,
-          solver: "barnesHut",
-          stabilization: {
-            enabled: true,
-            iterations: 300,
-            updateInterval: 50,
-            onlyDynamicEdges: false,
-            fit: true,
-          },
-        },
-        interaction: {
-          hover: true,
-          tooltipDelay: 100,
-          navigationButtons: true,
-          keyboard: true,
-          dragNodes: true,
-          dragView: true,
-          zoomView: true,
-        },
-        nodes: {
-          font: {
-            size: 14,
-            face: "arial",
-          },
-        },
-        edges: {
-          font: {
-            size: 12,
-            face: "arial",
-            align: "top",
-          },
-          smooth: {
-            enabled: true,
-            type: "continuous",
-            roundness: 0.2,
-          },
-        },
-      };
-
-      var network = new vis.Network(container, data, options);
-
-      // Hide loading message
-      network.on("stabilizationIterationsDone", function () {
-        document.getElementById("loading").style.display = "none";
-      });
-
-      // Update stats
-      document.getElementById("nodeCount").textContent = graphData.nodes.length;
-      document.getElementById("edgeCount").textContent = graphData.edges.length;
-
-      // Count unique types (nodes starting with PARENT_)
-      var typeCount = graphData.nodes.filter((n) =>
-        n.id.startsWith("PARENT_")
-      ).length;
-      document.getElementById("typeCount").textContent = typeCount;
-
-      // Build legend
-      var legendContainer = document.getElementById("legend");
-      var types = {};
-
-      graphData.nodes.forEach(function (node) {
-        if (node.id.startsWith("PARENT_")) {
-          var typeName = node.id.replace("PARENT_", "");
-          types[typeName] = node.color;
+      // This will be replaced by Python with actual network initialization code
+      {
+        {
+          NETWORK_INIT_CODE;
         }
-      });
+      }
+    </script>
 
-      Object.keys(types)
-        .sort()
-        .forEach(function (typeName) {
-          var item = document.createElement("div");
-          item.className = "legend-item";
+    <script type="text/javascript">
+      // This will be replaced by Python with actual graph data
+      window.graphData = {{GRAPH_DATA_JSON}};
 
-          var colorBox = document.createElement("div");
-          colorBox.className = "legend-color";
-          colorBox.style.backgroundColor = types[typeName];
+      console.log('Graph data injected:', window.graphData);
 
-          var label = document.createElement("span");
-          label.textContent = typeName;
+      // Update statistics panel
+      function updateStats() {
+          const data = window.graphData;
 
-          item.appendChild(colorBox);
-          item.appendChild(label);
-          legendContainer.appendChild(item);
-        });
+          // Update main statistics
+          document.getElementById('total-types').textContent = data.nodeTypes.length;
+          document.getElementById('total-entities').textContent = data.totalEntities.toLocaleString();
+          document.getElementById('total-relationships').textContent = data.totalRelationships.toLocaleString();
+          document.getElementById('relationship-types').textContent = data.relationshipTypes;
 
-      // Freeze node on hover feature
-      var originalNodePositions = {};
+          // Calculate total showing entities
+          const totalShowing = data.nodeTypes.reduce((sum, nt) => sum + nt.showing, 0);
+          document.getElementById('showing-entities').textContent = totalShowing.toLocaleString();
 
-      network.on("hoverNode", function (params) {
-        var nodeId = params.node;
+          // Populate node types list
+          const nodeTypesList = document.getElementById('node-types-list');
+          nodeTypesList.innerHTML = '';
 
-        // Store original position if not already stored
-        if (!originalNodePositions[nodeId]) {
-          var positions = network.getPositions([nodeId]);
-          originalNodePositions[nodeId] = positions[nodeId];
-        }
+          data.nodeTypes.forEach(nodeType => {
+              const item = document.createElement('div');
+              item.className = 'node-type-item';
 
-        // Fix the node position
-        data.nodes.update({
-          id: nodeId,
-          fixed: { x: true, y: true },
-        });
-      });
+              const colorBox = document.createElement('div');
+              colorBox.className = 'node-type-color';
+              colorBox.style.backgroundColor = nodeType.color;
 
-      network.on("blurNode", function (params) {
-        var nodeId = params.node;
+              const name = document.createElement('span');
+              name.className = 'node-type-name';
+              name.textContent = nodeType.type;
 
-        // Unfreeze the node
-        data.nodes.update({
-          id: nodeId,
-          fixed: { x: false, y: false },
-        });
-      });
+              const count = document.createElement('span');
+              count.className = 'node-type-count';
 
-      // Double-click to focus on a node
-      network.on("doubleClick", function (params) {
-        if (params.nodes.length > 0) {
-          network.focus(params.nodes[0], {
-            scale: 1.5,
-            animation: {
-              duration: 1000,
-              easingFunction: "easeInOutQuad",
-            },
+              if (nodeType.showing < nodeType.count) {
+                  count.innerHTML = `${nodeType.showing.toLocaleString()} <span class="showing-info">of ${nodeType.count.toLocaleString()}</span>`;
+              } else {
+                  count.textContent = nodeType.count.toLocaleString();
+              }
+
+              item.appendChild(colorBox);
+              item.appendChild(name);
+              item.appendChild(count);
+              nodeTypesList.appendChild(item);
           });
-        }
-      });
 
-      // Fit graph after stabilization
-      network.once("stabilizationIterationsDone", function () {
-        network.fit({
-          animation: {
-            duration: 1000,
-            easingFunction: "easeInOutQuad",
-          },
-        });
-      });
+          console.log('✅ Statistics panel updated');
+      }
+
+      // Freeze node on hover functionality
+      function setupNodeFreezing() {
+          // Wait for network to be initialized
+          if (typeof network === 'undefined') {
+              setTimeout(setupNodeFreezing, 100);
+              return;
+          }
+
+          let frozenNodes = new Set();
+
+          // On hover over a node, freeze it
+          network.on("hoverNode", function(params) {
+              const nodeId = params.node;
+              frozenNodes.add(nodeId);
+
+              // Fix the node position
+              const positions = network.getPositions([nodeId]);
+              const pos = positions[nodeId];
+              network.body.nodes[nodeId].options.fixed = {
+                  x: true,
+                  y: true
+              };
+              network.body.nodes[nodeId].x = pos.x;
+              network.body.nodes[nodeId].y = pos.y;
+          });
+
+          // On blur (mouse leaves node), unfreeze it
+          network.on("blurNode", function(params) {
+              const nodeId = params.node;
+              frozenNodes.delete(nodeId);
+
+              // Unfix the node position
+              if (network.body.nodes[nodeId]) {
+                  network.body.nodes[nodeId].options.fixed = {
+                      x: false,
+                      y: false
+                  };
+              }
+          });
+
+          console.log('✅ Node freezing enabled');
+      }
+
+      // Wait for DOM to be ready
+      if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function() {
+              updateStats();
+              setupNodeFreezing();
+          });
+      } else {
+          updateStats();
+          setupNodeFreezing();
+      }
     </script>
   </body>
 </html>
