@@ -83,20 +83,9 @@
         margin-right: 10px;
         border: 2px solid #ddd;
       }
-
-      .loading {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 18px;
-        color: #666;
-      }
     </style>
   </head>
   <body>
-    <div id="loading" class="loading">Loading graph...</div>
-
     <div class="stats">
       <div><strong>Nodes:</strong> <span id="nodeCount">0</span></div>
       <div><strong>Edges:</strong> <span id="edgeCount">0</span></div>
@@ -172,12 +161,6 @@
       };
 
       var network = new vis.Network(container, data, options);
-
-      // Hide loading message
-
-      // network.on('stabilizationIterationsDone', function() {
-      //     document.getElementById('loading').style.display = 'none';
-      // });
 
       // Update stats
       document.getElementById("nodeCount").textContent = graphData.nodes.length;
